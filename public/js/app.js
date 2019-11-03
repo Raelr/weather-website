@@ -16,7 +16,6 @@ form.addEventListener('submit', (e) => {
       }
       errorMessage.textContent = 'Forecast for: ' + data.location + ':\n'
       weatherMessage.textContent = data.data.forecast
-      console.log('Other: ', data.data.other)
       other.textContent = data.data.other
     })
   })
