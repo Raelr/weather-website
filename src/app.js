@@ -34,6 +34,7 @@ app.use(connect_datadog);
 app.use(express.static(publicDirectoryPath))
 
 app.get('', (req, res) => {
+  dogstats.increment('node.page.views.index', ['method:GET', 'route:contacts']);
   res.render('index', {
     title: 'Weather',
     name: 'Aryeh'
@@ -41,6 +42,7 @@ app.get('', (req, res) => {
 })
 
 app.get('/about', (req, res) => {
+  dogstats.increment('node.page.views.about', ['method:GET', 'route:contacts']);
   res.render('about', {
     title: 'About',
     name: 'Aryeh'
@@ -48,6 +50,7 @@ app.get('/about', (req, res) => {
 })
 
 app.get('/help', (req, res) => {
+  dogstats.increment('node.page.views.help', ['method:GET', 'route:contacts']);
   res.render('help', {
     title: 'Help',
     message: 'This is the help page',
@@ -56,17 +59,19 @@ app.get('/help', (req, res) => {
 })
 
 app.get('/weather', (req, res) => {
-  dogstats.increment('node.page.views', ['method:GET', 'route:contacts']);
+  dogstats.increment('node.weather.requests', ['method:GET', 'route:contacts']);
   if (!req.query.location) {
     return res.send({error: 'No location has been specified!'})
   }
 
   geocode(req.query.location, (error, {latitude, longitude, location} = {}) => {
     if (error) {
+      dogstats.increment('node.errors', ['method:GET', 'route:contacts']);
       return res.send({error: error})
     }
     forecast(latitude, longitude, (error, data) => {
       if (error) {
+        dogstats.increment('node.errors', ['method:GET', 'route:contacts']);
         return res.send({error: error})
       }
       res.send({location, data: data})
@@ -74,19 +79,9 @@ app.get('/weather', (req, res) => {
   })
 })
 
-app.get('/products', (req, res) => {
-  if (!req.query.search) {
-    return res.send({
-      error: 'You must provide a search term!'
-    })
-  }
-  console.log(req.query.search)
-  res.send({
-    products: []
-  })
-})
-
 app.get('/help/*', (req, res) => {
+  dogstats.increment('node.page.views.404', ['method:GET', 'route:contacts']);
+  dogstats.increment('node.errors', ['method:GET', 'route:contacts']);
   res.render('404', {
     title: '404',
     message: 'Could not find help article!',
@@ -95,6 +90,8 @@ app.get('/help/*', (req, res) => {
 })
 
 app.get('*', (req, res) => {
+  dogstats.increment('node.page.views.404', ['method:GET', 'route:contacts']);
+  dogstats.increment('node.errors', ['method:GET', 'route:contacts']);
   res.render('404', {
     title: '404',
     message: 'Could not find the requested URL!',
