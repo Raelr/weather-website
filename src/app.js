@@ -3,6 +3,16 @@ const express = require("express")
 const hbs = require("hbs")
 const forecast = require("./utils/forecast")
 const geocode = require("./utils/geocode")
+const statsD = require('hot-shots')
+// server.js
+var dd_options = {
+  'response_code':true,
+  'tags': ['env:staging']
+}
+
+var connect_datadog = require('connect-datadog')(dd_options);
+
+var dogstats = new statsD()
 
 const app = express()
 
@@ -18,6 +28,8 @@ app.set('view engine', 'hbs')
 app.set('views', viewsPath)
 hbs.registerPartials(partialsPath)
 
+// Add the datadog-middleware before your router
+app.use(connect_datadog);
 // Setup static directory
 app.use(express.static(publicDirectoryPath))
 
@@ -44,6 +56,7 @@ app.get('/help', (req, res) => {
 })
 
 app.get('/weather', (req, res) => {
+  dogstats.increment('node.page.views', ['method:GET', 'route:contacts']);
   if (!req.query.location) {
     return res.send({error: 'No location has been specified!'})
   }
