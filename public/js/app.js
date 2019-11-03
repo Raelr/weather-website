@@ -6,7 +6,7 @@ const weatherMessage = document.querySelector('#forecast')
 form.addEventListener('submit', (e) => {
   e.preventDefault()
   const location = search.value
-  fetch('http://localhost:3000/weather?location=' + encodeURIComponent(search.value)).then((response) => {
+  fetch('/weather?location=' + encodeURIComponent(search.value)).then((response) => {
     response.json().then((data) => {
       if (data.error) {
         weatherMessage.textContent = ''
