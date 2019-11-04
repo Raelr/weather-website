@@ -92,7 +92,7 @@ app.get('/weather', (req, res) => {
       logger.log('error', error)
       return res.send({error: error})
     }
-    dogstats.increment('node.weather.requests', ['method:APIREQ'+ ':' + location, 'route:contacts']);
+    dogstats.increment('node.weather.requests', ['method:' + location, 'route:contacts']);
     logger.log('info', location)
     forecast(latitude, longitude, (error, data) => {
       if (error) {
