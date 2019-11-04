@@ -35,7 +35,7 @@ app.use(express.static(publicDirectoryPath))
 
 app.get('', (req, res) => {
   dogstats.increment('node.page.views.index', ['method:GET', 'route:contacts']);
-  dogstats.increment('node.page.views', tags = ['views.index'], ['views:index', 'route:contacts']);
+  dogstats.increment('node.page.views', tags = ['views.index'], ['method:INDEX', 'route:contacts']);
   res.render('index', {
     title: 'Weather',
     name: 'Aryeh'
@@ -44,7 +44,7 @@ app.get('', (req, res) => {
 
 app.get('/about', (req, res) => {
   dogstats.increment('node.page.views.about', ['method:GET', 'route:contacts']);
-  dogstats.increment('node.page.views', tags=['views.about'], ['views:about', 'route:contacts']);
+  dogstats.increment('node.page.views', tags=['views.about'], ['method:ABOUT', 'route:contacts']);
   res.render('about', {
     title: 'About',
     name: 'Aryeh'
@@ -53,7 +53,7 @@ app.get('/about', (req, res) => {
 
 app.get('/help', (req, res) => {
   dogstats.increment('node.page.views.help', ['method:GET', 'route:contacts']);
-  dogstats.increment('node.page.views', tags=['views.help'], ['views:help', 'route:contacts']);
+  dogstats.increment('node.page.views', tags=['method:HELP'], ['method:HELP', 'route:contacts']);
   res.render('help', {
     title: 'Help',
     message: 'This is the help page',
@@ -62,7 +62,7 @@ app.get('/help', (req, res) => {
 })
 
 app.get('/weather', (req, res) => {
-  dogstats.increment('node.weather.requests', ['requests:weather', 'route:contacts']);
+  dogstats.increment('node.weather.requests', ['method:APIREQ', 'route:contacts']);
   if (!req.query.location) {
     return res.send({error: 'No location has been specified!'})
   }
@@ -83,8 +83,8 @@ app.get('/weather', (req, res) => {
 })
 
 app.get('/help/*', (req, res) => {
-  dogstats.increment('node.page.views.404', ['method:GET', 'route:contacts']);
-  dogstats.increment('node.page.views', tags=['views.404'], ['views:404', 'route:contacts']);
+  dogstats.increment('node.page.views.404', ['method:ERROR', 'route:contacts']);
+  dogstats.increment('node.page.views', tags=['views.404'], ['method:ERROR', 'route:contacts']);
   dogstats.increment('node.errors', ['method:GET', 'route:contacts']);
   res.render('404', {
     title: '404',
@@ -95,7 +95,7 @@ app.get('/help/*', (req, res) => {
 
 app.get('*', (req, res) => {
   dogstats.increment('node.page.views.404', ['method:GET', 'route:contacts']);
-  dogstats.increment('node.page.views', tags=['views.404'], ['views:404', 'route:contacts']);
+  dogstats.increment('node.page.views', tags=['views.404'], ['method:ERROR', 'route:contacts']);
   dogstats.increment('node.errors', ['method:GET', 'route:contacts']);
   res.render('404', {
     title: '404',
