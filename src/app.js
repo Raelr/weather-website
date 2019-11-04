@@ -84,11 +84,10 @@ app.get('/help', (req, res) => {
 })
 
 app.get('/weather', (req, res) => {
-  dogstats.increment('node.weather.requests', ['method:APIREQ', 'route:contacts']);
   if (!req.query.location) {
     return res.send({error: 'No location has been specified!'})
   }
-
+    dogstats.increment('node.weather.requests', ['method:'+ req.query.location, 'route:contacts']);
   geocode(req.query.location, (error, {latitude, longitude, location} = {}) => {
     if (error) {
       logger.log('error', error)
@@ -117,7 +116,7 @@ app.get('/help/*', (req, res) => {
 })
 
 app.get('*', (req, res) => {
-  dogstats.increment('node.page.views.404', ['method:GET', 'route:contacts']);
+  dogstats.increment('node.page.views.404', ['method:ERROR', 'route:contacts']);
   dogstats.increment('node.page.views', ['method:ERROR', 'route:contacts']);
   dogstats.increment('node.errors', ['errors:ERROR']);
   res.render('404', {
