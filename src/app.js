@@ -87,12 +87,12 @@ app.get('/weather', (req, res) => {
   if (!req.query.location) {
     return res.send({error: 'No location has been specified!'})
   }
-    dogstats.increment('node.weather.requests', ['method:'+ req.query.location, 'route:contacts']);
   geocode(req.query.location, (error, {latitude, longitude, location} = {}) => {
     if (error) {
       logger.log('error', error)
       return res.send({error: error})
     }
+    dogstats.increment('node.weather.requests', ['method:APIREQ'+ location, 'route:contacts']);
     logger.log('info', location)
     forecast(latitude, longitude, (error, data) => {
       if (error) {
