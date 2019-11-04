@@ -4,6 +4,13 @@ const hbs = require("hbs")
 const forecast = require("./utils/forecast")
 const geocode = require("./utils/geocode")
 const statsD = require('hot-shots')
+const tracer = require('dd-trace').init();
+
+// configure express integration
+tracer.use('express', {
+  service: 'weather-app'
+})
+
 // server.js
 var dd_options = {
   'response_code':true,
@@ -11,6 +18,21 @@ var dd_options = {
 }
 
 var connect_datadog = require('connect-datadog')(dd_options);
+const { createLogger, format, transports } = require('winston');
+
+
+const logger = createLogger({
+  level: 'info',
+  format: format.combine(
+    format.timestamp({
+      format: 'YYYY-MM-DD HH:mm:ss'
+    }),
+    format.json()
+  ),
+  transports: [
+    new transports.File({ filename: 'combined.log' })
+  ]
+});
 
 var dogstats = new statsD()
 
@@ -34,7 +56,7 @@ app.use(connect_datadog);
 app.use(express.static(publicDirectoryPath))
 
 app.get('', (req, res) => {
-  dogstats.increment('node.page.views.index', ['method:GET', 'route:contacts']);
+  dogstats.increment('node.page.views.index', ['method:INDEX', 'route:contacts']);
   dogstats.increment('node.page.views', ['method:INDEX', 'route:contacts']);
   res.render('index', {
     title: 'Weather',
@@ -43,7 +65,7 @@ app.get('', (req, res) => {
 })
 
 app.get('/about', (req, res) => {
-  dogstats.increment('node.page.views.about', ['method:GET', 'route:contacts']);
+  dogstats.increment('node.page.views.about', ['method:ABOUT', 'route:contacts']);
   dogstats.increment('node.page.views', ['method:ABOUT', 'route:contacts']);
   res.render('about', {
     title: 'About',
@@ -52,7 +74,7 @@ app.get('/about', (req, res) => {
 })
 
 app.get('/help', (req, res) => {
-  dogstats.increment('node.page.views.help', ['method:GET', 'route:contacts']);
+  dogstats.increment('node.page.views.help', ['method:HELP', 'route:contacts']);
   dogstats.increment('node.page.views', ['method:HELP', 'route:contacts']);
   res.render('help', {
     title: 'Help',
@@ -69,12 +91,13 @@ app.get('/weather', (req, res) => {
 
   geocode(req.query.location, (error, {latitude, longitude, location} = {}) => {
     if (error) {
-      dogstats.increment('node.errors', ['method:GET', 'route:contacts']);
+      logger.log('error', error)
       return res.send({error: error})
     }
+    logger.log('info', location)
     forecast(latitude, longitude, (error, data) => {
       if (error) {
-        dogstats.increment('node.errors', ['method:GET', 'route:contacts']);
+        logger.log('error', error)
         return res.send({error: error})
       }
       res.send({location, data: data})
@@ -85,7 +108,7 @@ app.get('/weather', (req, res) => {
 app.get('/help/*', (req, res) => {
   dogstats.increment('node.page.views.404', ['method:ERROR', 'route:contacts']);
   dogstats.increment('node.page.views', ['method:ERROR', 'route:contacts']);
-  dogstats.increment('node.errors', ['method:GET', 'route:contacts']);
+  dogstats.increment('node.errors', ['errors:HELPERR', 'route:contacts']);
   res.render('404', {
     title: '404',
     message: 'Could not find help article!',
@@ -96,7 +119,7 @@ app.get('/help/*', (req, res) => {
 app.get('*', (req, res) => {
   dogstats.increment('node.page.views.404', ['method:GET', 'route:contacts']);
   dogstats.increment('node.page.views', ['method:ERROR', 'route:contacts']);
-  dogstats.increment('node.errors', ['method:GET', 'route:contacts']);
+  dogstats.increment('node.errors', ['errors:ERROR']);
   res.render('404', {
     title: '404',
     message: 'Could not find the requested URL!',

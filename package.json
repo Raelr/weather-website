@@ -11,10 +11,12 @@
   "license": "ISC",
   "dependencies": {
     "connect-datadog": "0.0.9",
+    "dd-trace": "^0.15.5",
     "express": "^4.17.1",
     "hbs": "^4.0.6",
     "hot-shots": "^6.8.1",
-    "request": "^2.88.0"
+    "request": "^2.88.0",
+    "winston": "^3.2.1"
   },
   "devDependencies": {
     "nodemon": "^1.19.4"
